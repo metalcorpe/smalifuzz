@@ -36,7 +36,7 @@ class IntegrationTestSuite(unittest.TestCase):
 
     def test_apktool_unpack_success(self):
         apktool_path = fetch_apktool()
-        apk_path = Path(r"tests\test_vectors\app-release0.apk").absolute()
+        apk_path = Path("tests") / "test_vectors" / "app-release0.apk"
         with tempfile.TemporaryDirectory(
             suffix=None, prefix="tmp_", dir=".", ignore_cleanup_errors=False
         ) as tmpdirname:
