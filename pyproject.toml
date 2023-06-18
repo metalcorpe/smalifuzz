@@ -1,0 +1,15 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smalifuzz"
+version = "0.0.1"
+description = "My awesome Hello CLI application"
+readme = "README.md"
+authors = [{ name = "Real Python", email = "info@realpython.com" }]
+
+[project.scripts]
+smalifuzz = "smalifuzz.__main__:main"

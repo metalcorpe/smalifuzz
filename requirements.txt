@@ -1,2 +1,4 @@
 nose
 sphinx
+pysmali == 0.2.0
+ppdeep == 20200505
