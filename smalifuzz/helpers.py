@@ -46,7 +46,7 @@ def removeLevel(d, level):
 
 def recursive_dict_sort(some_dict: dict):
     for key, value in some_dict.items():
-        # if value is an empty list
+        # if value is a list
         if isinstance(value, list):
             some_dict[key].sort()
         # if value is a dictionary

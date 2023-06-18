@@ -7,7 +7,8 @@ import ppdeep
 from smali import ClassVisitor, SmaliReader, SVMType
 from smali.visitor import VisitorBase
 
-from smalifuzz.helpers import Exclusions, handle_dictionary, pathGenerator, unpack_apk
+from smalifuzz.helpers import (Exclusions, handle_dictionary, pathGenerator,
+                               unpack_apk)
 
 
 def handle_android_manifest(manifest: Path):

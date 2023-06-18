@@ -23,6 +23,8 @@ class UnitTestSuite(unittest.TestCase):
 
     def test_dictionary_serializer_success(self):
         dictionary_target = "aparam0param1returnType"
-        dictionary_initial = {"a":{"params":["param0","param1"], "return":"returnType"}}
+        dictionary_initial = {
+            "a": {"params": ["param0", "param1"], "return": "returnType"}
+        }
         dictionary_after = dictionary_serializer(dictionary_initial)
         self.assertEqual(dictionary_after, dictionary_target)
