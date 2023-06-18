@@ -1,6 +1,5 @@
 import tempfile
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from itertools import chain
 from pathlib import Path
 from xml.dom.minidom import parseString
 
@@ -8,7 +7,9 @@ import ppdeep
 from smali import ClassVisitor, MethodVisitor, SmaliReader, SVMType
 from smali.visitor import VisitorBase
 
-from smalifuzz.helpers import unpack_apk
+from smalifuzz.helpers import (Exclusions, dictionary_serializer,
+                               pathGenerator, recursive_dict_access,
+                               removeLevel, unpack_apk)
 
 
 def handle_android_manifest(manifest: Path):
