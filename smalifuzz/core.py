@@ -4,12 +4,10 @@ from pathlib import Path
 from xml.dom.minidom import parseString
 
 import ppdeep
-from smali import ClassVisitor, MethodVisitor, SmaliReader, SVMType
+from smali import ClassVisitor, SmaliReader, SVMType
 from smali.visitor import VisitorBase
 
-from smalifuzz.helpers import (Exclusions, dictionary_serializer,
-                               pathGenerator, recursive_dict_access,
-                               removeLevel, unpack_apk)
+from smalifuzz.helpers import Exclusions, handle_dictionary, pathGenerator, unpack_apk
 
 
 def handle_android_manifest(manifest: Path):
@@ -176,14 +174,7 @@ def generate_signature(apk: str, apk_tool: str) -> str:
                 # future.result()
 
     # print(dictionary)
-    dictionary = removeLevel(dictionary, 0)
-    dictionary = {
-        k: v for k, v in dictionary.items() if (v is not None) and (len(v) != 0)
-    }
-    dictionary = dict(sorted(dictionary.items()))
-    dictionary = recursive_dict_access(dictionary)
-
-    serialized = dictionary_serializer(dictionary)
+    serialized = handle_dictionary(dictionary)
 
     return serialized
 

@@ -44,18 +44,15 @@ def removeLevel(d, level):
     return removed
 
 
-def recursive_dict_access(some_dict: dict):
-    # print (f'recursive_dict_access called on {some_dict["name"]}')
+def recursive_dict_sort(some_dict: dict):
     for key, value in some_dict.items():
         # if value is an empty list
-        # if isinstance(value, list) and not value:
         if isinstance(value, list):
             some_dict[key].sort()
-            # print(f'key: {key} from dict {some_dict["name"]}')
         # if value is a dictionary
         elif isinstance(value, dict):
             value = dict(sorted(value.items()))
-            some_dict[key] = recursive_dict_access(value)
+            some_dict[key] = recursive_dict_sort(value)
 
     return some_dict
 
@@ -111,6 +108,18 @@ def unpack_apk(apk_path: str, apk_tool: str, output: str) -> None:
         print(f"stderr: {result.stderr}")
         print(f"e: {e}")
         sys.exit()
+
+
+def handle_dictionary(dictionary):
+    dictionary = removeLevel(dictionary, 0)
+    dictionary = {
+        k: v for k, v in dictionary.items() if (v is not None) and (len(v) != 0)
+    }
+    dictionary = dict(sorted(dictionary.items()))
+    dictionary = recursive_dict_sort(dictionary)
+
+    serialized = dictionary_serializer(dictionary)
+    return serialized
 
 
 def fetch_apktool() -> Path:
