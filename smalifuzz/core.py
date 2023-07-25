@@ -1,7 +1,10 @@
 import tempfile
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from io import TextIOWrapper
+from itertools import chain
 from pathlib import Path
-from xml.dom.minidom import parseString
+from typing import Tuple
+from xml.dom.minidom import Element, parseString
 
 import ppdeep
 from smali import ClassVisitor, SmaliReader, SVMType
@@ -36,12 +39,8 @@ def handle_android_manifest(manifest: Path):
             node.getAttribute("android:name")
         ]  # save permissionName to our list
 
-    # Print sorted list
-    # for permission in sorted(permissions):  # sort permissions and iterate
-    #     print(permission)  # print permission name
-
     #########################################
-    mainactivity = None  # or whatever python null is
+    mainactivity: Element | None = None  # or whatever python null is
     activities = dom.getElementsByTagName("activity")
 
     for activity in activities:
@@ -55,8 +54,10 @@ def handle_android_manifest(manifest: Path):
         if mainactivity:
             break  # end activity loop
 
-    # print(mainactivity.getAttribute("android:name"))
-    main_activity = mainactivity.getAttribute("android:name")
+    if mainactivity is not None:
+        main_activity: str = mainactivity.getAttribute("android:name")
+    else:
+        main_activity = ""
 
     result["permissions"] = permissions
     result["main_activity"] = main_activity
@@ -120,14 +121,11 @@ class NamePrinterClassVisitor(ClassVisitor):
     def visit_line(self, number):
         pass
 
-    # def visit_goto(self, block_name):
-    #     pass
 
-
-def run(reader, path):
-    dictionary = dict()
+def run(reader, path) -> Tuple[str, dict | None]:
+    dictionary: dict = dict()
     dictionary[path.name] = dict()
-    new_var1 = open(path)
+    new_var1: TextIOWrapper = open(path)
     if ".class" in new_var1.read():
         new_var1.seek(0)
         try:
@@ -145,23 +143,26 @@ def run(reader, path):
         return path.name, None
 
 
-def generate_signature(apk: str, apk_tool: str) -> str:
-    reader = SmaliReader(validate=False, comments=False, errors="ignore")
-    apk_path = Path(apk)
-    dictionary = dict()
+def generate_signature(
+    apk: Path, apk_tool: Path | None = None, temp_dir: Path | None = None
+) -> str:
+    reader: SmaliReader = SmaliReader(validate=False, comments=False, errors="ignore")
+    apk_path: Path = Path(apk)
+    _temp_dir: str | None = str(temp_dir) if temp_dir is not None else None
+    dictionary: dict = dict()
 
     with tempfile.TemporaryDirectory(
-        suffix=None, prefix="tmp_", dir=".", ignore_cleanup_errors=True
+        suffix=None, prefix="tmp_", dir=_temp_dir, ignore_cleanup_errors=True
     ) as tmpdirname:
         print("created temporary directory", tmpdirname)
 
         # unpacked_folder = apk_path.with_suffix("").name
-        unpacked_folder = tmpdirname
+        unpacked_folder: str = tmpdirname
         unpack_apk(str(apk_path), str(apk_tool), unpacked_folder)
-        manifest = Path(unpacked_folder) / "AndroidManifest.xml"
-        manifesto = handle_android_manifest(manifest)
+        manifest: Path = Path(unpacked_folder) / "AndroidManifest.xml"
+        manifesto: dict = handle_android_manifest(manifest)
 
-        pathList = pathGenerator(Path(unpacked_folder))
+        pathList: chain[Path] = pathGenerator(Path(unpacked_folder))
 
         # create process pool
         with ProcessPoolExecutor() as exe:
@@ -175,21 +176,22 @@ def generate_signature(apk: str, apk_tool: str) -> str:
                 # future.result()
 
     # print(dictionary)
-    serialized = handle_dictionary(dictionary)
+    serialized_signatures: str = handle_dictionary(dictionary)
+    serialized_permissions: str = "".join(sorted(manifesto["permissions"]))
 
-    return serialized
+    return serialized_signatures + serialized_permissions
 
 
 if __name__ == "__main__":
-    apk = "app-release0.apk"
-    s0 = generate_signature(apk)
+    apk: Path = Path("app-release0.apk")
+    s0: str = generate_signature(apk)
     h0 = ppdeep.hash(s0)
-    apk = "app-release1.apk"
-    s1 = generate_signature(apk)
-    h1 = ppdeep.hash(s1)
-    apk = "app-debug.apk"
-    s2 = generate_signature(apk)
-    h2 = ppdeep.hash(s2)
+    apk: Path = Path("app-release1.apk")
+    s1: str = generate_signature(apk)
+    h1: str = ppdeep.hash(s1)
+    apk: Path = Path("app-debug.apk")
+    s2: str = generate_signature(apk)
+    h2: str = ppdeep.hash(s2)
     print("FML")
     ppdeep.compare(h1, h2)
     pass
