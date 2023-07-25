@@ -67,11 +67,14 @@ def handle_android_manifest(manifest: Path):
 
 class NamePrinterClassVisitor(ClassVisitor):
     def __init__(
-        self, dictionary: dict, debug: bool, delegate: VisitorBase = None
+        self, dictionary: dict, debug: bool, delegate: VisitorBase | None = None
     ) -> None:
         self.debug = debug
         self.dictionary = dictionary
-        super().__init__(delegate)
+        if delegate is None:
+            super().__init__()
+        else:
+            super().__init__(delegate)
 
     def visit_class(self, name: str, access_flags: int) -> None:
         # The provided name is the type descriptor, so we have to
@@ -146,6 +149,20 @@ def run(reader, path) -> Tuple[str, dict | None]:
 def generate_signature(
     apk: Path, apk_tool: Path | None = None, temp_dir: Path | None = None
 ) -> str:
+    """Basic method used for signature generation
+
+    Parameters:
+        :param apk: Path of the apk to analyze
+        :type apk: Path
+        :param apk_tool: Path of the apktool to use to analyze
+        :type apk: Path | None
+        :param temp_dir: Path of the temp directory to use for the extraction. If not set the default os temp dir will used
+        :type apk: Path | None, optional
+
+    Returns:
+        :return: the unhashed signature value
+        :rtype: str
+    """
     reader: SmaliReader = SmaliReader(validate=False, comments=False, errors="ignore")
     apk_path: Path = Path(apk)
     _temp_dir: str | None = str(temp_dir) if temp_dir is not None else None
